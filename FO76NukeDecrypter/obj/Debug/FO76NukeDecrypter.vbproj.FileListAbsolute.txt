@@ -9,3 +9,4 @@ c:\users\joshu\onedrive\documents\visual studio 2013\Projects\FO76NukeDecrypter\
 c:\users\joshu\onedrive\documents\visual studio 2013\Projects\FO76NukeDecrypter\FO76NukeDecrypter\obj\Debug\FO76NukeDecrypter.exe
 c:\users\joshu\onedrive\documents\visual studio 2013\Projects\FO76NukeDecrypter\FO76NukeDecrypter\obj\Debug\FO76NukeDecrypter.xml
 c:\users\joshu\onedrive\documents\visual studio 2013\Projects\FO76NukeDecrypter\FO76NukeDecrypter\obj\Debug\FO76NukeDecrypter.pdb
+C:\Users\joshu\onedrive\documents\visual studio 2013\Projects\FO76NukeDecrypter\FO76NukeDecrypter\obj\Debug\FO76NukeDecrypter.vbprojResolveAssemblyReference.cache

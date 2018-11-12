@@ -54,9 +54,9 @@ Partial Class Form1
         '
         'RTB_Output
         '
-        Me.RTB_Output.Enabled = False
         Me.RTB_Output.Location = New System.Drawing.Point(12, 64)
         Me.RTB_Output.Name = "RTB_Output"
+        Me.RTB_Output.ReadOnly = True
         Me.RTB_Output.Size = New System.Drawing.Size(348, 140)
         Me.RTB_Output.TabIndex = 2
         Me.RTB_Output.Text = ""
@@ -113,7 +113,7 @@ Partial Class Form1
         '
         'Timer1
         '
-        Me.Timer1.Interval = 10
+        Me.Timer1.Interval = 50
         '
         'ProgressBar1
         '

@@ -1,19 +1,33 @@
 ﻿Public Class Form1
-    Public WordList As List(Of String) = New List(Of String)
+    Dim masterwordlist As List(Of List(Of String)) = New List(Of List(Of String))
+    Dim characterSort As Dictionary(Of Integer, List(Of String)) = New Dictionary(Of Integer, List(Of String))
     Dim progress As Double = 0
-    Dim t As Threading.Thread
+    Dim starttime As DateTime = Now
+    Dim t As List(Of Threading.Thread) = New List(Of Threading.Thread)
     Dim exiting As Boolean = False
+    Dim threadcount As Integer = 0
+    Dim maxthreads As Integer = 4
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim ApplicationDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
         Dim LogfilePath = System.IO.Path.Combine(ApplicationDir, "words.txt")
         Dim filereader As System.IO.TextReader = My.Computer.FileSystem.OpenTextFileReader(LogfilePath)
         Dim inputstring As String = filereader.ReadLine
+        For i As Integer = 0 To maxthreads - 1
+            masterwordlist.Add(New List(Of String))
+        Next
+        Dim index As Integer = 0
         Try
             While Not inputstring = "ZZZ"
-                WordList.Add(inputstring)
+                masterwordlist.Item(index).Add(inputstring)
+                If Not characterSort.ContainsKey(inputstring.Count) Then
+                    characterSort.Add(inputstring.Count, New List(Of String))
+                End If
+                characterSort(inputstring.Count).Add(inputstring)
+                index = (index + 1) Mod maxthreads
                 inputstring = filereader.ReadLine
             End While
         Catch ex As Exception
+            MsgBox(ex.Message)
         End Try
         TB_Letters.Text = My.Settings.letters
         TB_numbers.Text = My.Settings.numbers
@@ -25,22 +39,22 @@
         TB_numbers.Enabled = b
         B_Decrypt.Enabled = b
     End Sub
-    Private Sub decrypt()
+    Private Sub decrypt(ByVal wordlist As List(Of String), ByVal anagrms As List(Of String))
+        Invoke(Sub() threadcount += 1)
+        Dim message As String = ""
         Dim keyWordMap As Dictionary(Of String, String) = New Dictionary(Of String, String)
         Dim ciphermap As Dictionary(Of String, Dictionary(Of Char, Char)) = New Dictionary(Of String, Dictionary(Of Char, Char))
         Dim unscrambled As Dictionary(Of String, String) = New Dictionary(Of String, String)
-        Invoke(Sub() ChangeEnables(False))
         If TB_Letters.Text.Count = TB_numbers.Text.Count Then
-            Invoke(Sub() RTB_Output.Text = "")
             'get possible ciphers and decryption maps
-            For Each s As String In WordList
+            For Each s As String In wordlist
                 If s Like TB_Keyword.Text + "*" Then
                     Dim chars As List(Of Char) = New List(Of Char)
                     Dim k As String = ""
                     Dim startchar As Char = "a"
                     Dim charmap As Dictionary(Of Char, Char) = New Dictionary(Of Char, Char)
                     For Each c As Char In s
-                        If Not chars.Contains(c) Then
+                        If Not chars.Contains(c) And "a" <= c And c <= "z" Then
                             chars.Add(c)
                             k += c
                             charmap.Add(c, startchar)
@@ -60,8 +74,6 @@
                     End If
                 End If
             Next
-            Dim totalwork As Double = WordList.Count * keyWordMap.Count
-            Dim completedwork As Double = 0
             'for each possible keyword decrypt the input and create a leter to number map and unscrambled
             For Each p As KeyValuePair(Of String, Dictionary(Of Char, Char)) In ciphermap
                 Dim cipher As Dictionary(Of Char, Char) = p.Value
@@ -76,16 +88,14 @@
                     scrambled += newchar
                 Next
                 scrambled = scrambled.OrderBy(Function(c) c).ToArray()
-                For Each s As String In WordList
+                For Each s As String In anagrms
                     If s.OrderBy(Function(c) c).ToArray = scrambled Then
-                        Invoke(Sub() RTB_Output.Text += keyWordMap(p.Key) + " - " + p.Key + " - " + s + " - ")
+                        message += keyWordMap(p.Key) + " - " + p.Key + " - " + s + " - "
                         For Each c As Char In s
-                            Invoke(Sub() RTB_Output.Text += lettermap(c).ToString)
+                            message += lettermap(c).ToString
                         Next
-                        Invoke(Sub() RTB_Output.Text += vbNewLine)
+                        message += vbNewLine
                     End If
-                    completedwork += 1
-                    progress = completedwork / totalwork * 100
                     If exiting Then
                         Exit For
                     End If
@@ -95,12 +105,21 @@
                 End If
             Next
         End If
-        Invoke(Sub() ChangeEnables(True))
+        Invoke(Sub() RTB_Output.Text += message)
+        Invoke(Sub() threadcount -= 1)
     End Sub
     Private Sub B_Decrypt_Click(sender As Object, e As EventArgs) Handles B_Decrypt.Click
-        t = New Threading.Thread(AddressOf decrypt)
+        starttime = Now
+        RTB_Output.Text = ""
+        ChangeEnables(False)
+        For i As Integer = 0 To maxthreads - 1
+            Dim index As Integer = i
+            t.Add(New Threading.Thread(Sub() decrypt(masterwordlist.Item(index), characterSort.Item(TB_Letters.Text.Count))))
+        Next
         Timer1.Enabled = True
-        t.Start()
+        For Each th As Threading.Thread In t
+            th.Start()
+        Next
     End Sub
     Private Sub TB_Keyword_TextChanged(sender As Object, e As EventArgs) Handles TB_Keyword.TextChanged
         My.Settings.keyword = TB_Keyword.Text
@@ -115,17 +134,23 @@
         My.Settings.Save()
     End Sub
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
-        ProgressBar1.Value = progress
-        If RTB_Output.Enabled Then
-            t.Join()
+        If threadcount = 0 Then
+            For Each th As Threading.Thread In t
+                th.Join()
+            Next
+            t.Clear()
+            ChangeEnables(True)
             Timer1.Enabled = False
-            ProgressBar1.Value = 0
+            RTB_Output.Text += "Elapsed time: " + (Now - starttime).TotalSeconds.ToString + " seconds"
         End If
     End Sub
     Private Sub Form1_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         exiting = True
         If Not IsNothing(t) Then
-            t.Join()
+            For Each th As Threading.Thread In t
+                th.Join()
+            Next
+            t.Clear()
         End If
     End Sub
 End Class
