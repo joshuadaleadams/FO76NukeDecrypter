@@ -117,9 +117,16 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="words.txt">
+    <Content Include="processed.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="words.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CommonClasses\CommonClasses.vbproj">
+      <Project>{e3ea826c-df7a-47a2-94f1-d0be818f16b7}</Project>
+      <Name>CommonClasses</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

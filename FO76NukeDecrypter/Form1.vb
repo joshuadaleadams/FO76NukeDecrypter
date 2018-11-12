@@ -1,20 +1,35 @@
-﻿Public Class Form1
-    Public WordList As List(Of String) = New List(Of String)
-    Dim progress As Double = 0
-    Dim t As Threading.Thread
+﻿Imports CommonClasses
+
+Public Class FO76DecryptorMain
+    Dim maxthreads As Integer = 50
+    Dim wordcount As Dictionary(Of Integer, List(Of Word)) = New Dictionary(Of Integer, List(Of Word))
+    Dim results As List(Of List(Of DecryptResult)) = New List(Of List(Of DecryptResult))
+    Dim threads As List(Of Threading.Thread) = New List(Of Threading.Thread)
+    Dim masterWordList As List(Of Word) = New List(Of Word)
+    Dim totalthreads As Integer = maxthreads
     Dim exiting As Boolean = False
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim ApplicationDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-        Dim LogfilePath = System.IO.Path.Combine(ApplicationDir, "words.txt")
+        Dim LogfilePath = System.IO.Path.Combine(ApplicationDir, "processed.txt")
         Dim filereader As System.IO.TextReader = My.Computer.FileSystem.OpenTextFileReader(LogfilePath)
         Dim inputstring As String = filereader.ReadLine
-        Try
-            While Not inputstring = "ZZZ"
-                WordList.Add(inputstring)
-                inputstring = filereader.ReadLine
-            End While
-        Catch ex As Exception
-        End Try
+
+        For i As Integer = 0 To maxthreads - 1
+            results.Add(New List(Of DecryptResult))
+        Next
+        Dim index As Integer = 0
+        While Not inputstring = "end file"
+            Dim w As Word = New Word
+            w.InitFromString(inputstring)
+            If Not wordcount.ContainsKey(w.Count) Then
+                wordcount.Add(w.Count, New List(Of Word))
+            End If
+            wordcount(w.Count).Add(w)
+            masterWordList.Add(w)
+            index = (index + 1) Mod maxthreads
+            inputstring = filereader.ReadLine
+        End While
+
         TB_Letters.Text = My.Settings.letters
         TB_numbers.Text = My.Settings.numbers
         TB_Keyword.Text = My.Settings.keyword
@@ -25,82 +40,70 @@
         TB_numbers.Enabled = b
         B_Decrypt.Enabled = b
     End Sub
-    Private Sub decrypt()
-        Dim keyWordMap As Dictionary(Of String, String) = New Dictionary(Of String, String)
-        Dim ciphermap As Dictionary(Of String, Dictionary(Of Char, Char)) = New Dictionary(Of String, Dictionary(Of Char, Char))
-        Dim unscrambled As Dictionary(Of String, String) = New Dictionary(Of String, String)
-        Invoke(Sub() ChangeEnables(False))
+    Private Sub Decrypt(ByRef keys As List(Of Word), ByRef anagrams As List(Of Word), ByRef res As List(Of DecryptResult))
         If TB_Letters.Text.Count = TB_numbers.Text.Count Then
-            Invoke(Sub() RTB_Output.Text = "")
-            'get possible ciphers and decryption maps
-            For Each s As String In WordList
-                If s Like TB_Keyword.Text + "*" Then
-                    Dim chars As List(Of Char) = New List(Of Char)
-                    Dim k As String = ""
-                    Dim startchar As Char = "a"
-                    Dim charmap As Dictionary(Of Char, Char) = New Dictionary(Of Char, Char)
-                    For Each c As Char In s
-                        If Not chars.Contains(c) Then
-                            chars.Add(c)
-                            k += c
-                            charmap.Add(c, startchar)
-                            startchar = Chr(Asc(startchar) + 1)
-                        End If
-                    Next
-                    For i As Integer = Asc("a") To Asc("z")
-                        Dim c As Char = Chr(i)
-                        If Not chars.Contains(c) Then
-                            charmap.Add(c, startchar)
-                            startchar = Chr(Asc(startchar) + 1)
-                        End If
-                    Next
-                    If Not keyWordMap.ContainsKey(k) Then
-                        keyWordMap.Add(k, s)
-                        ciphermap.Add(k, charmap)
-                    End If
-                End If
-            Next
-            Dim totalwork As Double = WordList.Count * keyWordMap.Count
-            Dim completedwork As Double = 0
             'for each possible keyword decrypt the input and create a leter to number map and unscrambled
-            For Each p As KeyValuePair(Of String, Dictionary(Of Char, Char)) In ciphermap
-                Dim cipher As Dictionary(Of Char, Char) = p.Value
+            For Each w1 As Word In keys
+                Dim stime As DateTime = Now
                 Dim lettermap As Dictionary(Of Char, Integer) = New Dictionary(Of Char, Integer)
-                Dim scrambled As String = ""
-                Dim encypted As String = TB_Letters.Text
+                Dim encrypted As String = TB_Letters.Text
                 Dim numbers As String = TB_numbers.Text
-                For i As Integer = 0 To encypted.Count - 1
-                    Dim newchar As Char = cipher(encypted.Chars(i))
+                Dim decrypted As String = w1.DecryptLetters(encrypted)
+                Dim scrambled As String = decrypted.OrderBy(Function(c) c).ToArray()
+                For i As Integer = 0 To decrypted.Count - 1
+                    Dim newchar As Char = decrypted(i)
                     Dim num As Integer = Integer.Parse(numbers(i))
                     lettermap.Add(newchar, num)
-                    scrambled += newchar
                 Next
-                scrambled = scrambled.OrderBy(Function(c) c).ToArray()
-                For Each s As String In WordList
-                    If s.OrderBy(Function(c) c).ToArray = scrambled Then
-                        Invoke(Sub() RTB_Output.Text += keyWordMap(p.Key) + " - " + p.Key + " - " + s + " - ")
-                        For Each c As Char In s
-                            Invoke(Sub() RTB_Output.Text += lettermap(c).ToString)
+                For Each w2 As Word In anagrams
+                    If w2.Anagram = scrambled Then
+                        Dim keycode As String = ""
+                        For Each c As Char In w2.Word
+                            keycode += lettermap(c).ToString
                         Next
-                        Invoke(Sub() RTB_Output.Text += vbNewLine)
+                        Dim dr As New DecryptResult(w1, w2.Word, keycode)
+                        res.Add(dr)
                     End If
-                    completedwork += 1
-                    progress = completedwork / totalwork * 100
                     If exiting Then
                         Exit For
                     End If
                 Next
+                'Invoke(Sub() RTB_Output.Text += "thread: " + index.ToString + " time to calc keyword: " + w1.Word + " time: " + (Now - stime).TotalSeconds.ToString + " seconds" + vbNewLine)
                 If exiting Then
                     Exit For
                 End If
             Next
         End If
-        Invoke(Sub() ChangeEnables(True))
+        Invoke(Sub() totalthreads -= 1)
     End Sub
+    Dim starttime As DateTime = Now
     Private Sub B_Decrypt_Click(sender As Object, e As EventArgs) Handles B_Decrypt.Click
-        t = New Threading.Thread(AddressOf decrypt)
+        For Each l As List(Of DecryptResult) In results
+            l.Clear()
+        Next
+        threads.Clear()
+        RTB_Output.Text = ""
+        totalthreads = maxthreads
+        starttime = Now
+        Dim keylists As List(Of List(Of Word)) = New List(Of List(Of Word))
+        For i As Integer = 1 To maxthreads
+            keylists.Add(New List(Of Word))
+        Next
+        Dim ID As Integer = 0
+        For Each w As Word In masterWordList
+            If w.Word Like TB_Keyword.Text + "*" Then
+                keylists(ID).Add(w)
+                ID = (ID + 1) Mod maxthreads
+            End If
+        Next
+        ChangeEnables(False)
+        For i As Integer = 0 To maxthreads - 1
+            Dim index As Integer = i
+            Dim t As Threading.Thread = New Threading.Thread(Sub() Decrypt(keylists(index), wordcount(TB_Letters.Text.Count), results(index)))
+            t.Start()
+            threads.Add(t)
+        Next
         Timer1.Enabled = True
-        t.Start()
     End Sub
     Private Sub TB_Keyword_TextChanged(sender As Object, e As EventArgs) Handles TB_Keyword.TextChanged
         My.Settings.keyword = TB_Keyword.Text
@@ -115,17 +118,32 @@
         My.Settings.Save()
     End Sub
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
-        ProgressBar1.Value = progress
-        If RTB_Output.Enabled Then
-            t.Join()
+        'ProgressBar1.Value = progress
+        If totalthreads = 0 Then
+            For Each t As Threading.Thread In threads
+                t.Join()
+            Next
+            threads.Clear()
+            Dim summary As List(Of DecryptResult) = New List(Of DecryptResult)
+            For Each l As List(Of DecryptResult) In results
+                For Each dr As DecryptResult In l
+                    summary.Add(dr)
+                Next
+            Next
+            summary = summary.OrderBy(Function(dr) dr.Keycode).ToList
+
+            For Each dr As DecryptResult In summary
+                RTB_Output.Text += dr.Keyword.Word + " - " + dr.Keyword.Keyword + " - " + dr.Word + " - " + dr.Keycode + vbNewLine
+            Next
             Timer1.Enabled = False
-            ProgressBar1.Value = 0
+            RTB_Output.Text += "total time: " + (Now - starttime).TotalSeconds.ToString + " seconds"
+            ChangeEnables(True)
         End If
     End Sub
     Private Sub Form1_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         exiting = True
-        If Not IsNothing(t) Then
+        For Each t As Threading.Thread In threads
             t.Join()
-        End If
+        Next
     End Sub
 End Class
