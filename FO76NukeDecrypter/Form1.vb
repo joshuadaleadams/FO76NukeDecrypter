@@ -1,7 +1,7 @@
 ﻿Imports CommonClasses
 
 Public Class FO76DecryptorMain
-    Dim maxthreads As Integer = 50
+    Dim maxthreads As Integer = 1
     Dim wordcount As Dictionary(Of Integer, List(Of Word)) = New Dictionary(Of Integer, List(Of Word))
     Dim results As List(Of List(Of DecryptResult)) = New List(Of List(Of DecryptResult))
     Dim threads As List(Of Threading.Thread) = New List(Of Threading.Thread)
