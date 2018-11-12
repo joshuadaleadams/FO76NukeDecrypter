@@ -13,7 +13,6 @@ Public Class FO76DecryptorMain
         Dim LogfilePath = System.IO.Path.Combine(ApplicationDir, "processed.txt")
         Dim filereader As System.IO.TextReader = My.Computer.FileSystem.OpenTextFileReader(LogfilePath)
         Dim inputstring As String = filereader.ReadLine
-
         For i As Integer = 0 To maxthreads - 1
             results.Add(New List(Of DecryptResult))
         Next
