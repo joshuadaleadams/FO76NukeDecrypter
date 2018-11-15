@@ -99,7 +99,7 @@ Public Class FO76DecryptorMain
         Next
         Dim ID As Integer = 0
         For Each w As Word In masterWordList
-            If w.Word Like TB_Keyword.Text And (w.Word = w.Keyword Or CB_AllowDuplicateKeywordLetters.Checked) Then
+            If w.Word Like TB_Keyword.Text.ToLower And (w.Word = w.Keyword Or CB_AllowDuplicateKeywordLetters.Checked) Then
                 keylists(ID).Add(w)
                 ID = (ID + 1) Mod My.Settings.MaxThreads
             End If
@@ -167,5 +167,37 @@ Public Class FO76DecryptorMain
             results.Add(New List(Of DecryptResult))
         Next
         My.Settings.Save()
+    End Sub
+
+    Private Sub B_ManualKeyword_Click(sender As Object, e As EventArgs) Handles B_ManualKeyword.Click
+        Dim valid As Boolean = True
+        For Each c As Char In TB_Keyword.Text.ToLower
+            If Not ("a" <= c And c <= "z") Then
+                valid = False
+                Exit For
+            End If
+        Next
+        If valid Then
+            For Each l As List(Of DecryptResult) In results
+                l.Clear()
+            Next
+            threads.Clear()
+            RTB_Output.Text = ""
+            totalthreads = My.Settings.MaxThreads
+            starttime = Now
+            Dim keylists As List(Of List(Of Word)) = New List(Of List(Of Word))
+            For i As Integer = 1 To My.Settings.MaxThreads
+                keylists.Add(New List(Of Word))
+            Next
+            Dim ID As Integer = 0
+            keylists(ID).Add(New Word(TB_Keyword.Text.ToLower))
+            ChangeEnables(False)
+            Dim t As Threading.Thread = New Threading.Thread(Sub() Decrypt(keylists(0), wordcount(TB_Letters.Text.Count), results(0)))
+            t.Start()
+            threads.Add(t)
+            Timer1.Enabled = True
+        Else
+            MsgBox("Not a valid manual keyword")
+        End If
     End Sub
 End Class

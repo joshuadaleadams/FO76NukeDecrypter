@@ -36,6 +36,7 @@ Partial Class FO76DecryptorMain
         Me.CB_AllowDuplicateKeywordLetters = New System.Windows.Forms.CheckBox()
         Me.NUD_MaxThreads = New System.Windows.Forms.NumericUpDown()
         Me.L_maxThreads = New System.Windows.Forms.Label()
+        Me.B_ManualKeyword = New System.Windows.Forms.Button()
         CType(Me.NUD_MaxThreads, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -126,39 +127,48 @@ Partial Class FO76DecryptorMain
         '
         Me.CB_AllowDuplicateKeywordLetters.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.CB_AllowDuplicateKeywordLetters.AutoSize = True
-        Me.CB_AllowDuplicateKeywordLetters.Location = New System.Drawing.Point(93, 214)
+        Me.CB_AllowDuplicateKeywordLetters.Location = New System.Drawing.Point(205, 214)
         Me.CB_AllowDuplicateKeywordLetters.Name = "CB_AllowDuplicateKeywordLetters"
         Me.CB_AllowDuplicateKeywordLetters.Size = New System.Drawing.Size(178, 17)
         Me.CB_AllowDuplicateKeywordLetters.TabIndex = 9
         Me.CB_AllowDuplicateKeywordLetters.Text = "Allow Duplicate Keyword Letters"
         Me.CB_AllowDuplicateKeywordLetters.UseVisualStyleBackColor = True
         '
-        'NumericUpDown1
+        'NUD_MaxThreads
         '
-        Me.NUD_MaxThreads.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NUD_MaxThreads.Location = New System.Drawing.Point(357, 213)
+        Me.NUD_MaxThreads.Location = New System.Drawing.Point(370, 26)
         Me.NUD_MaxThreads.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
         Me.NUD_MaxThreads.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
-        Me.NUD_MaxThreads.Name = "NumericUpDown1"
+        Me.NUD_MaxThreads.Name = "NUD_MaxThreads"
         Me.NUD_MaxThreads.Size = New System.Drawing.Size(49, 20)
         Me.NUD_MaxThreads.TabIndex = 10
         Me.NUD_MaxThreads.Value = New Decimal(New Integer() {1, 0, 0, 0})
         '
         'L_maxThreads
         '
-        Me.L_maxThreads.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.L_maxThreads.AutoSize = True
-        Me.L_maxThreads.Location = New System.Drawing.Point(282, 215)
+        Me.L_maxThreads.Location = New System.Drawing.Point(295, 28)
         Me.L_maxThreads.Name = "L_maxThreads"
         Me.L_maxThreads.Size = New System.Drawing.Size(69, 13)
         Me.L_maxThreads.TabIndex = 11
         Me.L_maxThreads.Text = "Max Threads"
+        '
+        'B_ManualKeyword
+        '
+        Me.B_ManualKeyword.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.B_ManualKeyword.Location = New System.Drawing.Point(93, 210)
+        Me.B_ManualKeyword.Name = "B_ManualKeyword"
+        Me.B_ManualKeyword.Size = New System.Drawing.Size(103, 23)
+        Me.B_ManualKeyword.TabIndex = 12
+        Me.B_ManualKeyword.Text = "Manual Decrypt"
+        Me.B_ManualKeyword.UseVisualStyleBackColor = True
         '
         'FO76DecryptorMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(461, 239)
+        Me.Controls.Add(Me.B_ManualKeyword)
         Me.Controls.Add(Me.L_maxThreads)
         Me.Controls.Add(Me.NUD_MaxThreads)
         Me.Controls.Add(Me.CB_AllowDuplicateKeywordLetters)
@@ -191,4 +201,5 @@ Partial Class FO76DecryptorMain
     Friend WithEvents CB_AllowDuplicateKeywordLetters As CheckBox
     Friend WithEvents NUD_MaxThreads As NumericUpDown
     Friend WithEvents L_maxThreads As Label
+    Friend WithEvents B_ManualKeyword As Button
 End Class
