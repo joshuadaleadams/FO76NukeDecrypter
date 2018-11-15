@@ -33,7 +33,10 @@ Partial Class FO76DecryptorMain
         Me.L_Numbers = New System.Windows.Forms.Label()
         Me.TB_numbers = New System.Windows.Forms.TextBox()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
-        Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
+        Me.CB_AllowDuplicateKeywordLetters = New System.Windows.Forms.CheckBox()
+        Me.NUD_MaxThreads = New System.Windows.Forms.NumericUpDown()
+        Me.L_maxThreads = New System.Windows.Forms.Label()
+        CType(Me.NUD_MaxThreads, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'TB_Keyword
@@ -54,10 +57,13 @@ Partial Class FO76DecryptorMain
         '
         'RTB_Output
         '
+        Me.RTB_Output.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.RTB_Output.Location = New System.Drawing.Point(12, 64)
         Me.RTB_Output.Name = "RTB_Output"
         Me.RTB_Output.ReadOnly = True
-        Me.RTB_Output.Size = New System.Drawing.Size(348, 140)
+        Me.RTB_Output.Size = New System.Drawing.Size(437, 140)
         Me.RTB_Output.TabIndex = 2
         Me.RTB_Output.Text = ""
         '
@@ -72,6 +78,7 @@ Partial Class FO76DecryptorMain
         '
         'B_Decrypt
         '
+        Me.B_Decrypt.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.B_Decrypt.Location = New System.Drawing.Point(12, 210)
         Me.B_Decrypt.Name = "B_Decrypt"
         Me.B_Decrypt.Size = New System.Drawing.Size(75, 23)
@@ -113,20 +120,48 @@ Partial Class FO76DecryptorMain
         '
         'Timer1
         '
+        Me.Timer1.Interval = 200
         '
-        'ProgressBar1
+        'CB_AllowDuplicateKeywordLetters
         '
-        Me.ProgressBar1.Location = New System.Drawing.Point(93, 210)
-        Me.ProgressBar1.Name = "ProgressBar1"
-        Me.ProgressBar1.Size = New System.Drawing.Size(267, 23)
-        Me.ProgressBar1.TabIndex = 9
+        Me.CB_AllowDuplicateKeywordLetters.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.CB_AllowDuplicateKeywordLetters.AutoSize = True
+        Me.CB_AllowDuplicateKeywordLetters.Location = New System.Drawing.Point(93, 214)
+        Me.CB_AllowDuplicateKeywordLetters.Name = "CB_AllowDuplicateKeywordLetters"
+        Me.CB_AllowDuplicateKeywordLetters.Size = New System.Drawing.Size(178, 17)
+        Me.CB_AllowDuplicateKeywordLetters.TabIndex = 9
+        Me.CB_AllowDuplicateKeywordLetters.Text = "Allow Duplicate Keyword Letters"
+        Me.CB_AllowDuplicateKeywordLetters.UseVisualStyleBackColor = True
+        '
+        'NumericUpDown1
+        '
+        Me.NUD_MaxThreads.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.NUD_MaxThreads.Location = New System.Drawing.Point(357, 213)
+        Me.NUD_MaxThreads.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
+        Me.NUD_MaxThreads.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.NUD_MaxThreads.Name = "NumericUpDown1"
+        Me.NUD_MaxThreads.Size = New System.Drawing.Size(49, 20)
+        Me.NUD_MaxThreads.TabIndex = 10
+        Me.NUD_MaxThreads.Value = New Decimal(New Integer() {1, 0, 0, 0})
+        '
+        'L_maxThreads
+        '
+        Me.L_maxThreads.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.L_maxThreads.AutoSize = True
+        Me.L_maxThreads.Location = New System.Drawing.Point(282, 215)
+        Me.L_maxThreads.Name = "L_maxThreads"
+        Me.L_maxThreads.Size = New System.Drawing.Size(69, 13)
+        Me.L_maxThreads.TabIndex = 11
+        Me.L_maxThreads.Text = "Max Threads"
         '
         'FO76DecryptorMain
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(372, 239)
-        Me.Controls.Add(Me.ProgressBar1)
+        Me.ClientSize = New System.Drawing.Size(461, 239)
+        Me.Controls.Add(Me.L_maxThreads)
+        Me.Controls.Add(Me.NUD_MaxThreads)
+        Me.Controls.Add(Me.CB_AllowDuplicateKeywordLetters)
         Me.Controls.Add(Me.L_Numbers)
         Me.Controls.Add(Me.TB_numbers)
         Me.Controls.Add(Me.L_Letters)
@@ -138,6 +173,7 @@ Partial Class FO76DecryptorMain
         Me.Controls.Add(Me.TB_Keyword)
         Me.Name = "FO76DecryptorMain"
         Me.Text = "Fallout 76 Nuke Code Decryptor"
+        CType(Me.NUD_MaxThreads, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -152,6 +188,7 @@ Partial Class FO76DecryptorMain
     Friend WithEvents L_Numbers As System.Windows.Forms.Label
     Friend WithEvents TB_numbers As System.Windows.Forms.TextBox
     Friend WithEvents Timer1 As System.Windows.Forms.Timer
-    Friend WithEvents ProgressBar1 As System.Windows.Forms.ProgressBar
-
+    Friend WithEvents CB_AllowDuplicateKeywordLetters As CheckBox
+    Friend WithEvents NUD_MaxThreads As NumericUpDown
+    Friend WithEvents L_maxThreads As Label
 End Class

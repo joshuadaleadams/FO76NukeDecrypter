@@ -1,22 +1,17 @@
 ﻿Imports CommonClasses
 
 Public Class FO76DecryptorMain
-    Dim maxthreads As Integer = 1
     Dim wordcount As Dictionary(Of Integer, List(Of Word)) = New Dictionary(Of Integer, List(Of Word))
     Dim results As List(Of List(Of DecryptResult)) = New List(Of List(Of DecryptResult))
     Dim threads As List(Of Threading.Thread) = New List(Of Threading.Thread)
     Dim masterWordList As List(Of Word) = New List(Of Word)
-    Dim totalthreads As Integer = maxthreads
+    Dim totalthreads As Integer = My.Settings.MaxThreads
     Dim exiting As Boolean = False
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim ApplicationDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
         Dim LogfilePath = System.IO.Path.Combine(ApplicationDir, "processed.txt")
         Dim filereader As System.IO.TextReader = My.Computer.FileSystem.OpenTextFileReader(LogfilePath)
         Dim inputstring As String = filereader.ReadLine
-        For i As Integer = 0 To maxthreads - 1
-            results.Add(New List(Of DecryptResult))
-        Next
-        Dim index As Integer = 0
         While Not inputstring = "end file"
             Dim w As Word = New Word
             w.InitFromString(inputstring)
@@ -25,19 +20,33 @@ Public Class FO76DecryptorMain
             End If
             wordcount(w.Count).Add(w)
             masterWordList.Add(w)
-            index = (index + 1) Mod maxthreads
             inputstring = filereader.ReadLine
         End While
 
         TB_Letters.Text = My.Settings.letters
         TB_numbers.Text = My.Settings.numbers
         TB_Keyword.Text = My.Settings.keyword
+        CB_AllowDuplicateKeywordLetters.Checked = My.Settings.allowDuplicateKeywordLetters
+        If My.Settings.MaxThreads > NUD_MaxThreads.Maximum Then
+            My.Settings.MaxThreads = NUD_MaxThreads.Maximum
+            My.Settings.Save()
+        End If
+        If My.Settings.MaxThreads < NUD_MaxThreads.Minimum Then
+            My.Settings.MaxThreads = NUD_MaxThreads.Minimum
+            My.Settings.Save()
+        End If
+        NUD_MaxThreads.Value = My.Settings.MaxThreads
+        For i As Integer = 0 To My.Settings.MaxThreads - 1
+            results.Add(New List(Of DecryptResult))
+        Next
     End Sub
     Private Sub ChangeEnables(b As Boolean)
         TB_Keyword.Enabled = b
         TB_Letters.Enabled = b
         TB_numbers.Enabled = b
         B_Decrypt.Enabled = b
+        CB_AllowDuplicateKeywordLetters.Enabled = b
+        NUD_MaxThreads.Enabled = b
     End Sub
     Private Sub Decrypt(ByRef keys As List(Of Word), ByRef anagrams As List(Of Word), ByRef res As List(Of DecryptResult))
         If TB_Letters.Text.Count = TB_numbers.Text.Count Then
@@ -82,21 +91,21 @@ Public Class FO76DecryptorMain
         Next
         threads.Clear()
         RTB_Output.Text = ""
-        totalthreads = maxthreads
+        totalthreads = My.Settings.MaxThreads
         starttime = Now
         Dim keylists As List(Of List(Of Word)) = New List(Of List(Of Word))
-        For i As Integer = 1 To maxthreads
+        For i As Integer = 1 To My.Settings.MaxThreads
             keylists.Add(New List(Of Word))
         Next
         Dim ID As Integer = 0
         For Each w As Word In masterWordList
-            If w.Word Like TB_Keyword.Text + "*" Then
+            If w.Word Like TB_Keyword.Text And (w.Word = w.Keyword Or CB_AllowDuplicateKeywordLetters.Checked) Then
                 keylists(ID).Add(w)
-                ID = (ID + 1) Mod maxthreads
+                ID = (ID + 1) Mod My.Settings.MaxThreads
             End If
         Next
         ChangeEnables(False)
-        For i As Integer = 0 To maxthreads - 1
+        For i As Integer = 0 To My.Settings.MaxThreads - 1
             Dim index As Integer = i
             Dim t As Threading.Thread = New Threading.Thread(Sub() Decrypt(keylists(index), wordcount(TB_Letters.Text.Count), results(index)))
             t.Start()
@@ -144,5 +153,19 @@ Public Class FO76DecryptorMain
         For Each t As Threading.Thread In threads
             t.Join()
         Next
+    End Sub
+
+    Private Sub CB_AllowDuplicateKeywordLetters_CheckedChanged(sender As Object, e As EventArgs) Handles CB_AllowDuplicateKeywordLetters.CheckedChanged
+        My.Settings.allowDuplicateKeywordLetters = CB_AllowDuplicateKeywordLetters.Checked
+        My.Settings.Save()
+    End Sub
+
+    Private Sub NUD_MaxThreads_ValueChanged(sender As Object, e As EventArgs) Handles NUD_MaxThreads.ValueChanged
+        My.Settings.allowDuplicateKeywordLetters = NUD_MaxThreads.Value
+        results.Clear()
+        For i As Integer = 0 To My.Settings.MaxThreads - 1
+            results.Add(New List(Of DecryptResult))
+        Next
+        My.Settings.Save()
     End Sub
 End Class
